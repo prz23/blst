@@ -275,6 +275,7 @@ public:
 
 template<const vec256 MOD, const limb_t M0, const vec256 RR, const vec256 ONE>
 class blst_256_t {
+public:
     vec256 val;
 
     inline operator const limb_t*() const           { return val;    }
