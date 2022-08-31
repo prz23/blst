@@ -70,7 +70,7 @@ constexpr static inline size_t vec_nbits(const limb_t *inp, size_t n)
 
 template<const vec384 MOD, const limb_t M0, const vec384 RR, const vec384 ONE>
 class blst_384_t {
-private:
+public:
     vec384 val;
 
     inline operator const limb_t*() const           { return val;    }
