@@ -79,38 +79,41 @@ fn main() {
     println!("cargo:rerun-if-changed={}", c_src_dir.display());
     let mut file_vec = vec![c_src_dir.join("server.c")];
 
-    if target_arch.eq("x86_64") || target_arch.eq("aarch64") {
-        let asm_dir = blst_base_dir.join("build");
-        println!("cargo:rerun-if-changed={}", asm_dir.display());
-        assembly(&mut file_vec, &asm_dir, &target_arch);
-    } else {
-        cc.define("__BLST_NO_ASM__", None);
-    }
-    match (cfg!(feature = "portable"), cfg!(feature = "force-adx")) {
-        (true, false) => {
-            println!("Compiling in portable mode without ISA extensions");
-            cc.define("__BLST_PORTABLE__", None);
-        }
-        (false, true) => {
-            if target_arch.eq("x86_64") {
-                println!("Enabling ADX support via `force-adx` feature");
-                cc.define("__ADX__", None);
-            } else {
-                println!("`force-adx` is ignored for non-x86_64 targets");
-            }
-        }
-        (false, false) => {
-            #[cfg(target_arch = "x86_64")]
-            if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx")
-            {
-                println!("Enabling ADX because it was detected on the host");
-                cc.define("__ADX__", None);
-            }
-        }
-        (true, true) => panic!(
-            "Cannot compile with both `portable` and `force-adx` features"
-        ),
-    }
+    // if target_arch.eq("x86_64") || target_arch.eq("aarch64") {
+    //     let asm_dir = blst_base_dir.join("build");
+    //     println!("cargo:rerun-if-changed={}", asm_dir.display());
+    //     assembly(&mut file_vec, &asm_dir, &target_arch);
+    // } else {
+    //     cc.define("__BLST_NO_ASM__", None);
+    // }
+    cc.define("__BLST_NO_ASM__", None);
+    cc.define("__BLST_PORTABLE__", None);
+
+    // match (cfg!(feature = "portable"), cfg!(feature = "force-adx")) {
+    //     (true, false) => {
+    //         println!("Compiling in portable mode without ISA extensions");
+    //         cc.define("__BLST_PORTABLE__", None);
+    //     }
+    //     (false, true) => {
+    //         if target_arch.eq("x86_64") {
+    //             println!("Enabling ADX support via `force-adx` feature");
+    //             cc.define("__ADX__", None);
+    //         } else {
+    //             println!("`force-adx` is ignored for non-x86_64 targets");
+    //         }
+    //     }
+    //     (false, false) => {
+    //         #[cfg(target_arch = "x86_64")]
+    //         if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx")
+    //         {
+    //             println!("Enabling ADX because it was detected on the host");
+    //             cc.define("__ADX__", None);
+    //         }
+    //     }
+    //     (true, true) => panic!(
+    //         "Cannot compile with both `portable` and `force-adx` features"
+    //     ),
+    // }
     cc.flag_if_supported("-mno-avx") // avoid costly transitions
         .flag_if_supported("-fno-builtin")
         .flag_if_supported("-Wno-unused-function")
